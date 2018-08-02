@@ -1,0 +1,13 @@
+# Linux System Files
+.directory
+.fuse_hidden*
+.nfs*
+
+# Text Editor Files
+*~
+*.kate-swp
+.swo
+.swp
+
+# Binary Files
+chip8
