@@ -36,7 +36,7 @@ If no rom is specified, the default `BOOT1` rom will be used.
 
 Ctrl + Q = Quit<br>
 Ctrl + P = Pause<br>
-Ctrl + R = Reset
-Ctrl + Plus = Speed Up
-Ctrl + Minus = Slow Down
+Ctrl + R = Reset<br>
+Ctrl + Plus = Speed Up<br>
+Ctrl + Minus = Slow Down<br>
 Ctrl + 0 = Reset Speed
