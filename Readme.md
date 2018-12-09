@@ -19,7 +19,7 @@ gcc -O3 -Wall -Wno-unused-result chip8.c -o chip8 -lSDL2main -lSDL2
 
 ### Advanced Options
 
-If you edit `chip8.c`, you will find near the top of the file a list of variables which can be edited to modify the ticks per frame, speed, scale, and color of the emulator.
+If you edit `chip8.c`, you will find near the top of the file a list of variables which can be edited to modify the ticks per frame, speed, scale, color, and keymap of the emulator.
 
 ## Running
 
@@ -34,3 +34,6 @@ If no rom is specified, the default `BOOT1` rom will be used.
 Ctrl + Q = Quit
 Ctrl + P = Pause
 Ctrl + R = Reset
+Ctrl + Plus = Speed Up
+Ctrl + Minus = Slow Down
+Ctrl + 0 = Reset Speed

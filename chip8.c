@@ -27,22 +27,39 @@
 size_t ticks_per_frame = 15;
 
 /*
- * To change the speed of this game, multiply this number by how
- * much faster or slower you would like the game to be.
+ * The default speed of the emulator, where 1.0 is 100% of the normal speed.
  */
-double speed = 1.0;
+double default_speed = 1.0;
 
 /*
  * CHIP-8 has a 64x32 pixel display. This is multiplied by
- * the below variable in order to make the size of the window.
+ * the scale in order to create the actual size of the window.
  */
 #define scale 15
+
+/*
+ * Debug mode prints out the pc register and opcode every tick.
+ */
+bool debug = false;
 
 // foreground color
 #define fgcolor 0xAAEEFF
 
 // background color
 #define bgcolor 0x0066FF
+
+/* CHIP-8 uses a hex keyboard:
+ *  1 2 3 C
+ *  4 5 6 D
+ *  7 8 9 E
+ *  A 0 B F
+ */
+int keymap[] = {
+	SDLK_x, SDLK_1, SDLK_2, SDLK_3,
+	SDLK_q, SDLK_w, SDLK_e, SDLK_a,
+	SDLK_s, SDLK_d, SDLK_z, SDLK_c,
+	SDLK_4, SDLK_r, SDLK_f, SDLK_v
+};
 
 //////////////////////////////
 // OPTIONS END
@@ -173,6 +190,7 @@ void update_timers()
 	}
 }
 
+double speed;
 bool prompting = false;
 
 /* executes the next opcode
@@ -200,7 +218,9 @@ int tick()
 	uint8_t y = (lo & 0xF0) >> 4;
 	uint16_t addr = opcode & 0x0FFF;
 
-	//printf("pc=%d, opcode=0x%x\n", pc, opcode);
+	if (debug) {
+		printf("pc=%d, opcode=0x%x\n", pc, opcode);
+	}
 
 	if (prompting) {
 		goto prompt;
@@ -560,19 +580,6 @@ uint64_t gettimestamp()
 	return (uint64_t) 1000000 * tv.tv_sec + tv.tv_usec;
 }
 
-/* CHIP-8 uses a hex keyboard
- *  1 2 3 C
- *  4 5 6 D
- *  7 8 9 E
- *  A 0 B F
- */
-int keymap[] = {
-	SDLK_x, SDLK_1, SDLK_2, SDLK_3,
-	SDLK_q, SDLK_w, SDLK_e, SDLK_a,
-	SDLK_s, SDLK_d, SDLK_z, SDLK_c,
-	SDLK_4, SDLK_r, SDLK_f, SDLK_v
-};
-
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture* texture;
@@ -588,8 +595,10 @@ void sdl_terminate()
 
 int main(int argc, char** argv)
 {
-	start:
 	srand(time(0));
+	speed = default_speed;
+
+	start:
 
 	if (argc > 2) {
 		fprintf(stderr, "Invalid arguments\n");
@@ -624,6 +633,9 @@ int main(int argc, char** argv)
 	bool running = true;
 	user_pause = false;
 
+	const double base = 1.05;
+	double speedup = log(speed) / log(base);
+
 	while (running)
 	{
 		uint64_t start = gettimestamp();
@@ -645,12 +657,35 @@ int main(int argc, char** argv)
 							// ctrl + p = pause
 							if (event.key.keysym.sym == SDLK_p) {
 								user_pause = !user_pause;
+								printf(user_pause ? "pause\n" : "unpause\n");
 							}
 
 							// ctrl + r = reset
 							if (event.key.keysym.sym == SDLK_r) {
 								sdl_terminate();
+								printf("reset\n");
 								goto start;
+							}
+
+							// ctrl + plus = speed up
+							if (event.key.keysym.sym == SDLK_EQUALS) {
+								speedup++;
+								speed = pow(base, speedup);
+								printf("speed: %f\n", speed);
+							}
+
+							// ctrl + minus = slow down
+							if (event.key.keysym.sym == SDLK_MINUS) {
+								speedup--;
+								speed = pow(base, speedup);
+								printf("speed: %f\n", speed);
+							}
+
+							// ctrl + 0 = reset speed to default
+							if (event.key.keysym.sym == SDLK_0) {
+								speed = default_speed;
+								speedup = log(speed) / log(base);
+								printf("speed: %f\n", speed);
 							}
 						}
 						else
